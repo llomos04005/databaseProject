@@ -5,10 +5,12 @@ class HotelService{
     constructor(db) {
         this.client = db.sequelize;
         this.Hotel = db.Hotel;
+        this.Rate = db.Rate;
+        this.User = db.User;
     }
     //Create a hotel using raw SQL
     async create(name, location) {
-        sequelize.query('INSERT INTO hotels (Name, Location) VALUES (:Nmae, :Location)', {
+        sequelize.query('INSERT INTO hotels (Name, Location) VALUES (:Name, :Location)', {
             replacements:
             {
                 Name: name,
@@ -29,10 +31,54 @@ class HotelService{
     }
     //Delete a hotel using raw SQL
     async deleteHotel(hotelId) {
-        await sequelize-query('DELETE FROM hotels WHERE id = :hotelId', {
+        await sequelize.query('DELETE FROM hotels WHERE id = :hotelId', {
             replacements:
             {
                 hotelId: hotelId
+            }
+        }).then(result => {
+            return result
+        }).catch(err => {
+            return (err)
+        })
+    }
+    //Get hotel details using raw SQL
+    async getHotelDetails(hotelId) {
+        const hotel = await sequelize.query('SELECT * FROM hotels WHERE id = :hotelId LIMIT 1;', {
+            replacements:
+            {
+                hotelId: hotelId
+            },
+            type: QueryTypes.SELECT,
+        });
+
+        //Retrieve user rating count
+        const userRateCount = await sequelize.query('SELECT COUNT(*) as Rated FROM rates WHERE HotelId = :hotelId AND UserId = :userId;', {
+            replacements:
+            {
+                hotelId: hotelId,
+                userId: 1
+            },
+            type: QueryTypes.SELECT,
+        });
+        //Check if user has rated this hotel.
+        if (userRateCount[0].Rated > 0) {
+            hotel[0].Rated = true;
+        } else {
+            hotel[0].Rated = false;
+        }
+
+        return hotel[0];
+    }
+
+    //Rate a hotel using raw SQL
+    async makeARate(userId, hotelId, value) {
+        sequelize.query('INSERT INTO rates (Value, HotelId, UserId) VALUES (:value, :hotelId, :userId)', {
+            replacements:
+            {
+                userId: userId,
+                hotelId: hotelId,
+                value: value,
             }
         }).then(result => {
             return result

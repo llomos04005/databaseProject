@@ -12,11 +12,22 @@ router.get('/', async function(req, res, next) {
     res.render('hotels', {title: 'Hotels', hotels:hotels})
 });
 
+router.get('/:hotelId', async function(req, res, next) {
+    const hotel = await hotelService.getHotelDetails(req.params.hotelId);
+    res.render('hotelDetails', {hotel: hotel});
+});
+
 //POST
 router.post('/', jsonParser, async function(req, res, next) {
     let Name = req.body.Name;
     let Location = req.body.Location;
     await hotelService.create(Name, Location);
+    res.end()
+});
+
+router.post('/:hotelId/rate', jsonParser, async function(req, res, next) {
+    let value = req.body.Value;
+    await hotelService.makeARate(1, req.params.hotelId, value);
     res.end()
 });
 
