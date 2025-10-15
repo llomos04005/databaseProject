@@ -6,13 +6,23 @@ class RoomService {
         this.client = db.sequelize;
         this.Room = db.Room;
         this.Reservation = db.Reservation;
+        this.User = db.User;
+        this.Hotel = db.Hotel;
     }
     //Get all rooms using raw SQL
     async get() {
-        const rooms = await sequelize.query('SELECT * FROM rooms', {
-            type: QueryTypes.SELECT,
-        });
-        return rooms;
+        return this.Room.findAll({
+            where: {},
+            include: [{
+                model: this.User,
+                through: {
+                    attributes: ['StartDate', 'EndDate']
+                }
+            },
+            {
+                model: this.Hotel
+            }]
+        })
     }
     //Create a room using raw SQL
     async create(capacity, pricePerDay, hotelId) {
@@ -31,14 +41,22 @@ class RoomService {
     }
     //Get all rooms for a specific hotel using raw SQL
     async getHotelRooms(hotelId) {
-        const rooms = await sequelize.query('SELECT * FROM rooms WHERE HotelId = :hotelId', {
-            replacements:
+        return this.Room.findAll({
+            where: {
+                HotelId: hotelId
+            },
+            include: [{
+                model: this.User,
+                through: {
+                    attributes: ['StartDate', 'EndDate']
+                }
+            },
             {
-                hotelId: hotelId
-            }, type: QueryTypes.SELECT,
-        });
-        return rooms;
+                model: this.Hotel
+            }]
+        })
     }
+
     //Delete a room using raw SQL
     async deleteRoom(roomId) {
         await sequelize.query('DELETE FROM rooms WHERE id = :roomId', {
