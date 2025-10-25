@@ -7,12 +7,22 @@ class UserService {
         this.Reservation = db.Reservation;
     }
 
-    async create(firstName, lastName) {
-        return this.User.create({ FirstName: firstName, LastName: lastName });
+    async create(firstName, lastName, username, salt, encryptedPassword) {
+        return this.User.create(
+            { 
+                FirstName: firstName, 
+                LastName: lastName,
+                Username: username,
+                Salt: salt,
+                EncryptedPassword: encryptedPassword
+             }
+        )
     }
 
     async getAll() {
-        return this.User.findAll({ where: {} });
+        return this.User.findAll({ 
+            where: {} 
+        })
     }
 
     async getOne(userId) {
@@ -20,8 +30,26 @@ class UserService {
             where: { id: userId },
             include: {
                 model: this.Room,
-                through: { attributes: ['StartDate', 'EndDate'] },
-                include: { model: this.Hotel }
+                through: { 
+                    attributes: ['StartDate', 'EndDate'] 
+                },
+                include: { 
+                    model: this.Hotel 
+                }
+            }
+        });
+    }
+    async getOneByName(username) {        
+        return await this.User.findOne({
+            where: {username: username},
+            include: {
+                model: this.Room,
+                through: {
+                    attributes: ['StartDate', 'EndDate']
+                }, 
+                include: {
+                    model: this.Hotel
+                }            
             }
         });
     }

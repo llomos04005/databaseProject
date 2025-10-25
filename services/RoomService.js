@@ -4,26 +4,16 @@ const {QueryTypes} = require('sequelize');
 class RoomService {
     constructor(db) {
         this.client = db.sequelize;
-        this.Room = db.Room;
-        this.Reservation = db.Reservation;
-        this.User = db.User;
-        this.Hotel = db.Hotel;
     }
+
     //Get all rooms using raw SQL
     async get() {
-        return this.Room.findAll({
-            where: {},
-            include: [{
-                model: this.User,
-                through: {
-                    attributes: ['StartDate', 'EndDate']
-                }
-            },
-            {
-                model: this.Hotel
-            }]
-        })
+         const rooms = await sequelize.query('SELECT * FROM rooms', {
+            type: QueryTypes.SELECT,
+        });
+        return rooms;
     }
+
     //Create a room using raw SQL
     async create(capacity, pricePerDay, hotelId) {
         sequelize.query('INSERT INTO rooms (Capacity, PricePerDay, HotelId) VALUES (:Capacity, :PricePerDay, : HotelId)', {
@@ -39,22 +29,17 @@ class RoomService {
             return (err)
         })
     }
+
     //Get all rooms for a specific hotel using raw SQL
     async getHotelRooms(hotelId) {
-        return this.Room.findAll({
-            where: {
-                HotelId: hotelId
-            },
-            include: [{
-                model: this.User,
-                through: {
-                    attributes: ['StartDate', 'EndDate']
-                }
-            },
+         const rooms = await sequelize.query('SELECT * FROM rooms WHERE HotelId = :hotelId', {
+            replacements:
             {
-                model: this.Hotel
-            }]
-        })
+                hotelId: hotelId
+            },
+            type: QueryTypes.SELECT,
+        });
+        return rooms;
     }
 
     //Delete a room using raw SQL
@@ -70,6 +55,7 @@ class RoomService {
             return (err)
         })
     }
+    
     //Rent a specified room using raw SQL
     async rentARoom(userId, roomId, startDate, endDate) {
     sequelize.query('INSERT INTO reservations (StartDate, EndDate, RoomId, UserId) VALUES (:StartDate, :EndDate, :RoomId, :UserId)', {
