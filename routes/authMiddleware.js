@@ -14,5 +14,14 @@ module.exports = {
                 return;
             }
             res.redirect('/login');
+    },
+    isAdmin: function(req, res, next) {
+        if(req.user.role === "Admin") {
+            next();
+            return;
+        }
+        else {
+            res.status(401).send(new Error());
+        }
     }
 }

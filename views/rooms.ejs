@@ -1,13 +1,19 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <title>
+      DAB Rooms
+    </title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="/stylesheets/rooms.css" rel="stylesheet">
     <link rel="stylesheet" href="/stylesheets/navbar.css">
   </head>
   <body>
     <%- include('partials/navbar') %>
+    <%- include('./partials/loggedInAs.ejs', {username: username}) %>
+    <div class="container">
     <h2 class="p-3">Choose a room</h2>
+    <hr>
     <div class="list-group">
       <% rooms.forEach(function(room) { %>
         <div class="row px-3 py-1 w-100">
@@ -16,7 +22,13 @@
         </div>
       <% }); %>
     </div>
-
+    <% if(isAdmin){%>
+    <button onclick="addRoom('http:\/\/localhost:3000\/rooms')" class="col btn btn-secondary"> Add a room</button>
+  <%}; %>
+    </div>
+    <hr>
+    <%-include('./partials/footer.ejs')%>
+    <script src="/javascripts/addRoom.js"></script>
     <script src="/javascripts/makeReservation.js"></script>
   </body>
 </html>

@@ -34,9 +34,12 @@ passport.deserializeUser(function(user, cb) {
 });
 
 var router = express.Router();
+
 router.get('/login', function(req, res, next) {
-  res.render('login');
+    const username = req.user?.username;
+    res.render('login', { username });
 });
+
 router.post('/login/password', passport.authenticate('local', {
   successReturnToOrRedirect: '/',
   failureRedirect: '/login',

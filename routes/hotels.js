@@ -5,24 +5,24 @@ var jsonParser = bodyParser.json()
 var HotelService = require("../services/HotelService")
 var db = require("../models");
 var hotelService = new HotelService(db);
-var { checkIfAuthorized } = require("./authMiddleware")
+var { checkIfAuthorized, isAdmin } = require("./authMiddleware")
 
 
 //GET hotels listing
 router.get('/', async function(req, res, next) {
     const hotels = await hotelService.get();
-    res.render('hotels', {hotels: hotels, user: req.user});
+    res.render('hotels', {hotels: hotels });
 });
 
 router.get('/:hotelId', async function(req, res, next) {
     const userId = req.user?.id ?? 0;
+    const username = req.user?.username ?? 0;
     const hotel = await hotelService.getHotelDetails(req.params.hotelId, userId);
-    console.log(hotel);
-    res.render('hotelDetails', {hotel: hotel, userId, user: req.user});
+    res.render('hotelDetails', {hotel: hotel, userId, username});
 });
 
 //POST
-router.post('/', checkIfAuthorized, jsonParser, async function(req, res, next) {
+router.post('/', checkIfAuthorized, isAdmin, jsonParser, async function(req, res, next) {
     let Name = req.body.Name;
     let Location = req.body.Location;
     await hotelService.create(Name, Location);

@@ -11,7 +11,8 @@ var { checkIfAuthorized } = require("./authMiddleware")
 router.get('/:hotelId', async function(req, res, next) {
     const rooms = await roomService.getHotelRooms(req.params.hotelId);
     const userId = req.user?.id ?? 0;
-    res.render('rooms', { rooms: rooms, userId });
+    const isAdmin = req.user?.role === "Admin";
+    res.render('rooms', { rooms: rooms, userId, isAdmin });
 });
 
 router.get('/', async function(req, res, next) {
