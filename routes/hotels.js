@@ -1,40 +1,44 @@
 var express = require('express');
 var router = express.Router();
+var bodyParser = require('body-parser')
+var jsonParser = bodyParser.json()
 var HotelService = require("../services/HotelService")
 var db = require("../models");
 var hotelService = new HotelService(db);
-var bodyParser = require('body-parser')
-var jsonParser = bodyParser.json()
+var { checkIfAuthorized } = require("./authMiddleware")
+
 
 //GET hotels listing
 router.get('/', async function(req, res, next) {
     const hotels = await hotelService.get();
-    res.render('hotels', {title: 'Hotels', hotels:hotels})
+    res.render('hotels', {hotels: hotels, user: req.user});
 });
 
 router.get('/:hotelId', async function(req, res, next) {
-    const hotel = await hotelService.getHotelDetails(req.params.hotelId);
-    res.render('hotelDetails', {hotel: hotel});
+    const userId = req.user?.id ?? 0;
+    const hotel = await hotelService.getHotelDetails(req.params.hotelId, userId);
+    console.log(hotel);
+    res.render('hotelDetails', {hotel: hotel, userId, user: req.user});
 });
 
 //POST
-router.post('/', jsonParser, async function(req, res, next) {
+router.post('/', checkIfAuthorized, jsonParser, async function(req, res, next) {
     let Name = req.body.Name;
     let Location = req.body.Location;
     await hotelService.create(Name, Location);
     res.end()
 });
 
-router.post('/:hotelId/rate', jsonParser, async function(req, res, next) {
+router.post('/:hotelId/rate', checkIfAuthorized, jsonParser, async function(req, res, next) {
     let value = req.body.Value;
-    await hotelService.makeARate(1, req.params.hotelId, value);
+    let userId = req.body.UserId;
+    await hotelService.makeARate(userId, req.params.hotelId, value);
     res.end()
 });
 
 //DELETE
-router.delete('/', jsonParser, async function(req, res, next) {
-    let id = req.body.id;
-    await hotelService.deleteHotel(id);
+router.delete('/', checkIfAuthorized, jsonParser, async function(req, res, next) {
+    await hotelService.deleteHotel(req.params.id);
     res.end()
 });
 

@@ -43,8 +43,8 @@ class HotelService{
         })
     }
     //Get hotel details using raw SQL
-    async getHotelDetails(hotelId) {
-        const hotel = await sequelize.query('SELECT * FROM hotels WHERE id = :hotelId LIMIT 1;', {
+    async getHotelDetails(hotelId, userId) {
+        const hotel = await sequelize.query('SELECT h.id, h.Name, h.Location, ROUND(AVG(r.Value), 1) AS AvgRate FROM hotels h LEFT JOIN rates r ON h.id = r.HotelId WHERE h.id = :hotelId', {
             replacements:
             {
                 hotelId: hotelId
@@ -57,10 +57,11 @@ class HotelService{
             replacements:
             {
                 hotelId: hotelId,
-                userId: 1
+                userId: userId
             },
             type: QueryTypes.SELECT,
         });
+        
         //Check if user has rated this hotel.
         if (userRateCount[0].Rated > 0) {
             hotel[0].Rated = true;
