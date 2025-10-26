@@ -7,11 +7,17 @@ var { canSeeUserList, canSeeUserDetails, checkIfAuthorized, isAdmin } = require(
 var bodyParser = require('body-parser');
 const { isDataURI } = require('validator');
 var jsonParser = bodyParser.json()
+var createError = require ('http-errors');
 
 
 /* GET users listing. */
 router.get('/:userId', canSeeUserDetails, async function(req, res, next) {
   const user = await userService.getOne(req.params.userId);
+  
+  if(user === null ) {
+    next(createError(404));
+    return;
+  }
   res.render('userDetails', { user: user });
 });
 

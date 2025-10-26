@@ -6,6 +6,7 @@ var HotelService = require("../services/HotelService")
 var db = require("../models");
 var hotelService = new HotelService(db);
 var { checkIfAuthorized, isAdmin } = require("./authMiddleware")
+var createError = require('http-errors');
 
 
 //GET hotels listing
@@ -18,7 +19,14 @@ router.get('/:hotelId', async function(req, res, next) {
     const userId = req.user?.id ?? 0;
     const username = req.user?.username ?? 0;
     const hotel = await hotelService.getHotelDetails(req.params.hotelId, userId);
-    res.render('hotelDetails', {hotel: hotel, userId, username});
+
+    console.log("HOTEL RESULT: ", hotel);
+
+    if(hotel === null) {
+        next(createError(404));
+        return;
+    }
+    res.render('hotelDetails', {hotel: hotel, userId, username, user: req.user});
 });
 
 //POST

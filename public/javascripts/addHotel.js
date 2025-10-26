@@ -1,6 +1,10 @@
 async function addHotel(url) {
     let name = prompt("Provide the new hotel's name");
     let hotelLocation = prompt("Provide the new hotel's location");
+
+    if(name === null || hotelLocation === null)
+        return;
+    
     await fetch(url, {
         method: "POST",
         headers: {

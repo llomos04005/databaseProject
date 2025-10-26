@@ -10,81 +10,66 @@ class HotelService{
     }
     //Create a hotel using raw SQL
     async create(name, location) {
-        sequelize.query('INSERT INTO hotels (Name, Location) VALUES (:Name, :Location)', {
-            replacements:
+        return this.Hotel.create(
             {
                 Name: name,
                 Location: location
             }
-        }).then(result => {
-            return result
-        }).catch(err => {
-            return (err)
-        })
+        ).catch(function(err) {
+            console.log(err);
+        });
     }
+
     //Get all hotels using raw SQL
     async get() {
-        const hotels = await sequelize.query('SELECT * FROM hotels', {
-            type: QueryTypes.SELECT,
+        return this.Hotel.findAll({
+            where: {}
+        }).catch(function (err) {
+            console.log(err);
         });
-        return hotels;
     }
-    //Delete a hotel using raw SQL
-    async deleteHotel(hotelId) {
-        await sequelize.query('DELETE FROM hotels WHERE id = :hotelId', {
-            replacements:
-            {
-                hotelId: hotelId
-            }
-        }).then(result => {
-            return result
-        }).catch(err => {
-            return (err)
-        })
-    }
-    //Get hotel details using raw SQL
+
     async getHotelDetails(hotelId, userId) {
-        const hotel = await sequelize.query('SELECT h.id, h.Name, h.Location, ROUND(AVG(r.Value), 1) AS AvgRate FROM hotels h LEFT JOIN rates r ON h.id = r.HotelId WHERE h.id = :hotelId', {
-            replacements:
-            {
-                hotelId: hotelId
+        const hotel =  await this.Hotel.findOne({
+            where: {
+                id: hotelId
             },
-            type: QueryTypes.SELECT,
+            include: {
+                model: this.User,
+                through: {
+                    attributes: ['Value']
+                }        
+            },
+        }).catch(function (err) {
+            console.log(err);
         });
 
-        //Retrieve user rating count
-        const userRateCount = await sequelize.query('SELECT COUNT(*) as Rated FROM rates WHERE HotelId = :hotelId AND UserId = :userId;', {
-            replacements:
-            {
-                hotelId: hotelId,
-                userId: userId
-            },
-            type: QueryTypes.SELECT,
-        });
-        
-        //Check if user has rated this hotel.
-        if (userRateCount[0].Rated > 0) {
-            hotel[0].Rated = true;
-        } else {
-            hotel[0].Rated = false;
+        if(hotel != null) {
+            hotel.avg = hotel.Users.map(x => x.Rate.dataValues.Value)
+             .reduce((a, b) => a + b, 0) / hotel.Users.length;
+            hotel.rated = hotel.Users.filter(x=> x.dataValues.id == userId).length > 0;
         }
-
-        return hotel[0];
+            return hotel
+     }
+  
+    async deleteHotel(hotelId) {
+        return this.Hotel.destroy({
+            where: {id: hotelId}
+        }).catch(function (err) {
+            console.log(err);
+        });
     }
+   
 
-    //Rate a hotel using raw SQL
     async makeARate(userId, hotelId, value) {
-        sequelize.query('INSERT INTO rates (Value, HotelId, UserId) VALUES (:value, :hotelId, :userId)', {
-            replacements:
+        return this.Rate.create(
             {
-                userId: userId,
-                hotelId: hotelId,
-                value: value,
+                UserId: userId,
+                HotelId: hotelId,
+                Value: value
             }
-        }).then(result => {
-            return result
-        }).catch(err => {
-            return (err)
+        ).catch(function (err) {
+            console.log(err);
         })
     }
 }
