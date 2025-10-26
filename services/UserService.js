@@ -1,3 +1,5 @@
+const { Op } = require("sequelize");
+
 class UserService {
     constructor(db) {
         this.client = db.sequelize;
@@ -55,7 +57,14 @@ class UserService {
     }
 
     async deleteUser(userId) {
-        return this.User.destroy({ where: { id: userId } });
+        return this.User.destroy({ 
+            where: { 
+                id: userId,
+                Role: {
+                    [Op.not]: 'Admin'
+                }
+            } 
+        })
     }
 }
 module.exports = UserService;

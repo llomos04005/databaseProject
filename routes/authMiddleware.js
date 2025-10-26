@@ -15,13 +15,20 @@ module.exports = {
             }
             res.redirect('/login');
     },
+    canSeeUserList: function (req, res, next) {
+        if (req.user != null)
+            if(req.user.role ==="Admin") {
+                next()
+                return;
+            }
+            res.redirect('/login');
+        },
     isAdmin: function(req, res, next) {
-        if(req.user.role === "Admin") {
+        if (req.user.role === "Admin") {
             next();
             return;
-        }
-        else {
-            res.status(401).send(new Error());
-        }
+     } else {
+      res.status(401).send(new Error());
     }
+  }
 }
