@@ -11,8 +11,12 @@ var createError = require('http-errors');
 
 //GET hotels listing
 router.get('/', async function(req, res, next) {
-    const hotels = await hotelService.get();
-    res.render('hotels', {hotels: hotels });
+   let hotels = await hotelService.get();
+   if ( req.query.location != null) {
+    hotels = hotels.filter(hotel => hotel.Location.toLowerCase() ==
+        req.query.location.toLowerCase());
+   }
+    res.render('hotels', {hotels: hotels, user: req.user });
 });
 
 router.get('/:hotelId', async function(req, res, next) {
